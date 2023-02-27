@@ -2,4 +2,9 @@
 # dataset dir,this is kitti dataset if sequence 00
 dataset_dir: /home/weihao/code_space/dataset/kitite/00
 
+# camera intrinsics
+camera.fx: 517.3
+camera.fy: 516.5
+camera.cx: 325.1
+camera.cy: 249.7
 
