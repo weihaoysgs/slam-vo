@@ -1,0 +1,5 @@
+%YAML:1.0
+# dataset dir,this is kitti dataset if sequence 00
+dataset_dir: /home/weihao/code_space/dataset/kitite/00
+
+

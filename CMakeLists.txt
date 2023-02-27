@@ -8,6 +8,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_CXX_STANDARD 14)
 
 ############### dependencies ######################
+include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories("/usr/include/eigen3")
 find_package(OpenCV 3.2.0 REQUIRED)
 find_package(Pangolin REQUIRED)
@@ -27,6 +28,36 @@ include_directories(${Sophus_INCLUDE_DIRS})
 include_directories(${Pangolin_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
 
+set(THIRD_PARTY_LIBS
+${OpenCV_LIBS}
+${Sophus_LIBRARIES}
+${Pangolin_LIBRARIES} GL GLU GLEW glut
+g2o_core g2o_stuff g2o_types_sba g2o_solver_csparse g2o_csparse_extension
+${GTEST_BOTH_LIBRARIES}
+${GLOG_LIBRARIES}
+${GFLAGS_LIBRARIES}
+pthread
+${CSPARSE_LIBRARY}
+)
+
+set(SRC_FILES_LIBS
+src/Config.cpp
+)
+
 add_executable(run_kitti_stereo
 ./main/run_kitti_stereo.cpp
+${SRC_FILES_LIBS}
 )
+target_link_libraries(run_kitti_stereo
+${THIRD_PARTY_LIBS}
+)
+
+
+add_executable(config_test
+./test/config_test.cpp
+${SRC_FILES_LIBS}
+)
+target_link_libraries(config_test
+${THIRD_PARTY_LIBS}
+)
+
