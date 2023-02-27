@@ -9,7 +9,7 @@ class Dataset {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   typedef std::shared_ptr<Dataset> Ptr;
-  Dataset(std::string &dir_path);
+  explicit Dataset(std::string &dir_path);
   ~Dataset();
 
  private:

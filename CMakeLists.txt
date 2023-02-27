@@ -38,11 +38,24 @@ ${GLOG_LIBRARIES}
 ${GFLAGS_LIBRARIES}
 pthread
 ${CSPARSE_LIBRARY}
+fmt::fmt
 )
 
 set(SRC_FILES_LIBS
 src/Config.cpp
+src/Dataset.cpp
+src/Camera.cpp
 )
+
+
+SET(TEST_SOURCES camera_test config_test)
+
+FOREACH (test_src ${TEST_SOURCES})
+    ADD_EXECUTABLE(${test_src} test/${test_src}.cpp ${SRC_FILES_LIBS})
+    TARGET_LINK_LIBRARIES(${test_src} ${THIRD_PARTY_LIBS})
+    ADD_TEST(${test_src} ${test_src})
+ENDFOREACH (test_src)
+
 
 add_executable(run_kitti_stereo
 ./main/run_kitti_stereo.cpp
@@ -51,13 +64,3 @@ ${SRC_FILES_LIBS}
 target_link_libraries(run_kitti_stereo
 ${THIRD_PARTY_LIBS}
 )
-
-
-add_executable(config_test
-./test/config_test.cpp
-${SRC_FILES_LIBS}
-)
-target_link_libraries(config_test
-${THIRD_PARTY_LIBS}
-)
-
