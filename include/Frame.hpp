@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "Common.hpp"
+#include "Feature.hpp"
 
 namespace slam_vo {
 

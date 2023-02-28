@@ -8,6 +8,7 @@
 #include "Common.hpp"
 #include "Config.hpp"
 #include "Dataset.hpp"
+#include "Frontend.hpp"
 
 namespace slam_vo {
 class VisualOdometry {
@@ -26,6 +27,7 @@ class VisualOdometry {
  private:
   const std::string config_file_path_;
   Dataset::Ptr dataset_ptr_;
+  Frontend::Ptr frontend_ptr_;
 };
 
 }  // namespace slam_vo

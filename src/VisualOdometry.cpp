@@ -8,6 +8,7 @@ bool VisualOdometry::VOInit() {
       Config::GetYamlParamByKey<std::string>("dataset_dir"));
 
   CHECK_EQ(dataset_ptr_->DatasetInit(), true);
+  frontend_ptr_ = std::make_shared<Frontend>();
   return true;
 }
 void VisualOdometry::Run() {
@@ -21,9 +22,7 @@ void VisualOdometry::Run() {
 bool VisualOdometry::Step() {
   Frame::Ptr new_frame = dataset_ptr_->NextFrame();
   if (new_frame == nullptr) return false;
-  cv::imshow("left_image", new_frame->left_image_);
-  cv::imshow("right_image", new_frame->right_image_);
-  cv::waitKey(10);
+  frontend_ptr_->AddNewFrame(new_frame);
   return true;
 }
 }  // namespace slam_vo
