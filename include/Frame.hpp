@@ -8,9 +8,9 @@
 namespace slam_vo {
 
 // forward declare
-struct Feature;
+class Feature;
 
-struct Frame {
+class Frame {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   typedef std::shared_ptr<Frame> Ptr;
