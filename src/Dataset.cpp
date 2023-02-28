@@ -2,8 +2,8 @@
 
 namespace slam_vo {
 
-bool Dataset::DatasetInit() const {
-  std::ifstream fin(dataset_path_ + "./cal.txt");
+bool Dataset::DatasetInit() {
+  std::ifstream fin(dataset_path_ + "/calib.txt");
   if (!fin) {
     LOG(ERROR) << "Can not open " << dataset_path_
                << "/cal.txt, check the config file path";
@@ -34,10 +34,18 @@ bool Dataset::DatasetInit() const {
     t = K.inverse() * t;
     // Why multiply by 0.5 here? After experimenting, after commenting out this
     // line, the program can still run normally, but it seems to run faster.
-    // you can alse change the value to 0.6 or 0.3
+    // you can also change the value to 0.6 or 0.3
     // Solution: because we resize the image using scale (0.5, 0.5)
     K = K * 0.5;
+
+    Camera::Ptr new_camera =
+        std::make_shared<Camera>(K(0, 0), K(1, 1), K(0, 2), K(1, 2), t.norm(),
+                                 Sophus::SE3d(Sophus::SO3d(), t));
+    cameras_ptr_.push_back(new_camera);
+    LOG(INFO) << "Camera " << i << " extrinsics: " << t.transpose();
   }
+  fin.close();
+  current_image_index_ = 0;
   return true;
 }
 

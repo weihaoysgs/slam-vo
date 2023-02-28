@@ -6,6 +6,7 @@
 namespace slam_vo {
 class Camera {
  public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   typedef std::shared_ptr<Camera> Ptr;
 
   Camera(double fx, double fy, double cx, double cy, double base_line,

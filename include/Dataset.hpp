@@ -4,7 +4,7 @@
 #include <eigen3/Eigen/Core>
 #include <memory>
 #include <utility>
-
+#include <iostream>
 #include "Camera.hpp"
 #include "Common.hpp"
 
@@ -16,11 +16,12 @@ class Dataset {
   explicit Dataset(std::string dataset_path)
       : dataset_path_(std::move(dataset_path)){};
   ~Dataset() = default;
-  bool DatasetInit() const;
+  bool DatasetInit();
 
  private:
   const std::string dataset_path_;
-  std::vector<Camera::Ptr> camera_ptr_;
+  std::vector<Camera::Ptr> cameras_ptr_;
+  int current_image_index_{0};
 };
 
 }  // namespace slam_vo
