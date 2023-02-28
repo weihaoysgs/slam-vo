@@ -5,6 +5,7 @@
 
 #include "Common.hpp"
 #include "Frame.hpp"
+#include "MapPoint.hpp"
 
 namespace slam_vo {
 

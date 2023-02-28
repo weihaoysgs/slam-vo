@@ -49,6 +49,7 @@ src/Frame.cpp
 src/VisualOdometry.cpp
 src/Frontend.cpp
 src/Feature.cpp
+src/MapPoint.cpp
 )
 
 
