@@ -1,5 +1,5 @@
-#ifndef _VISUAL_ODOMETRY_HPP_
-#define _VISUAL_ODOMETRY_HPP_
+#ifndef VISUAL_ODOMETRY_HPP_
+#define VISUAL_ODOMETRY_HPP_
 
 #include <gtest/gtest.h>
 
@@ -32,4 +32,4 @@ class VisualOdometry {
 
 }  // namespace slam_vo
 
-#endif  //_VISUAL_ODOMETRY_HPP_
+#endif  // VISUAL_ODOMETRY_HPP_
