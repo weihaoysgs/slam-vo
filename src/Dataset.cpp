@@ -49,4 +49,25 @@ bool Dataset::DatasetInit() {
   return true;
 }
 
+Frame::Ptr Dataset::NextFrame() {
+  boost::format fmt("%s/image_%d/%06d.png");
+  // clang-format off
+  cv::Mat left_image = cv::imread((fmt % dataset_path_ % 0 % current_image_index_).str(),
+                                   cv::IMREAD_GRAYSCALE);
+  cv::Mat right_image = cv::imread((fmt % dataset_path_ % 1 % current_image_index_).str(), 
+                                   cv::IMREAD_GRAYSCALE);
+  // clang-format on
+  assert(left_image.data != nullptr && right_image.data != nullptr);
+  cv::Mat left_resized_image, right_resized_image;
+  cv::resize(left_image, left_resized_image, cv::Size(), 0.5, 0.5,
+             cv::INTER_NEAREST);
+  cv::resize(right_image, right_resized_image, cv::Size(), 0.5, 0.5,
+             cv::INTER_NEAREST);
+  Frame::Ptr new_frame = Frame::CreateNewFrame();
+  new_frame->left_image_ = left_resized_image;
+  new_frame->right_image_ = right_resized_image;
+  current_image_index_++;
+  return new_frame;
+}
+
 }  // namespace slam_vo

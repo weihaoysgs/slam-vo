@@ -1,12 +1,17 @@
 #ifndef _DATASET_HPP_
 #define _DATASET_HPP_
 
+#include <boost/format.hpp>
 #include <eigen3/Eigen/Core>
-#include <memory>
-#include <utility>
 #include <iostream>
+#include <memory>
+#include <opencv2/opencv.hpp>
+#include <utility>
+#include <gtest/gtest.h>
+
 #include "Camera.hpp"
 #include "Common.hpp"
+#include "Frame.hpp"
 
 namespace slam_vo {
 class Dataset {
@@ -17,6 +22,7 @@ class Dataset {
       : dataset_path_(std::move(dataset_path)){};
   ~Dataset() = default;
   bool DatasetInit();
+  Frame::Ptr NextFrame();
 
  private:
   const std::string dataset_path_;
