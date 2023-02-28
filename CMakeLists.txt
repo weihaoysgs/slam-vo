@@ -45,6 +45,7 @@ set(SRC_FILES_LIBS
 src/Config.cpp
 src/Dataset.cpp
 src/Camera.cpp
+src/Frame.cpp
 )
 
 
