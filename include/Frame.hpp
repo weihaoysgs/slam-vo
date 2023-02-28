@@ -19,11 +19,11 @@ class Frame {
   // clang-format off
   unsigned long int id_;            	// frame id
   unsigned long int key_frame_id_;  	// the distribute keyframe id (if keyframe)
-	double timestamp_;									// timestamp
-  bool is_keyframe_{false};           // if keyframe
-  cv::Mat left_image_, right_image_;  // stereo image
-  Sophus::SE3d pose_;                 // frame pose
-  std::mutex pose_mutex_;  						// in different thread, we will update the frame pose
+  double timestamp_;			// timestamp
+  bool is_keyframe_{false};             // if keyframe
+  cv::Mat left_image_, right_image_;    // stereo image
+  Sophus::SE3d pose_;                   // frame pose
+  std::mutex pose_mutex_;  		// in different thread, we will update the frame pose
   std::vector<std::shared_ptr<Feature>> left_features_;   // left image features
   std::vector<std::shared_ptr<Feature>> right_features_;  // right images features
 

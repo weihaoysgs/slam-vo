@@ -9,6 +9,8 @@ bool VisualOdometry::VOInit() {
 
   CHECK_EQ(dataset_ptr_->DatasetInit(), true);
   frontend_ptr_ = std::make_shared<Frontend>();
+  frontend_ptr_->SetCameras(dataset_ptr_->GetCamera(0),
+                            dataset_ptr_->GetCamera(1));
   return true;
 }
 void VisualOdometry::Run() {

@@ -23,6 +23,8 @@ class Frontend {
   bool AddNewFrame(const Frame::Ptr& frmae);
   bool StereoInit();
   int DetectFeatures();
+  int FindFeatureInRightImg();
+  void SetCameras(const Camera::Ptr &left_camera, const Camera::Ptr &right_camera);
 
  private:
   // data

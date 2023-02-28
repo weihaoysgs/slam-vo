@@ -38,6 +38,7 @@ bool Frontend::AddNewFrame(const Frame::Ptr& frame) {
 
 bool Frontend::StereoInit() {
   int num_feature_detected = DetectFeatures();
+
   std::vector<cv::KeyPoint> left_img_kps;
   cv::Mat drawed_kps_img;
   for (const auto& feature : current_frame_->left_features_) {
@@ -73,5 +74,27 @@ int Frontend::DetectFeatures() {
     cnt_feature_detected++;
   }
   return cnt_feature_detected;
+}
+int Frontend::FindFeatureInRightImg() {
+  std::vector<cv::Point2f> pts_left, pts_right;
+  for (auto& feature : current_frame_->left_features_) {
+    pts_left.push_back(feature->position_.pt);
+    auto mp = feature->map_point_.lock();
+    if (mp) {
+      // use projected points as initial guess
+      // cv::Point2f pt_2d = camera_left_->world2pixel(feature->map_point_, current_frame_->pose_);
+    }
+    else{
+      pts_right.push_back(feature->position_.pt);
+    }
+  }
+
+  return 0;
+}
+
+void Frontend::SetCameras(const Camera::Ptr& left_camera,
+                          const Camera::Ptr& right_camera) {
+  this->camera_left_ = left_camera;
+  this->camera_right_ = right_camera;
 }
 }  // namespace slam_vo
