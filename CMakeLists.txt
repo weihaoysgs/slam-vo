@@ -53,7 +53,7 @@ src/MapPoint.cpp
 )
 
 
-SET(TEST_SOURCES camera_test config_test dataset_test vo_test)
+SET(TEST_SOURCES camera_test config_test dataset_test vo_test map_point_test)
 
 FOREACH (test_src ${TEST_SOURCES})
     ADD_EXECUTABLE(${test_src} test/${test_src}.cpp ${SRC_FILES_LIBS})
