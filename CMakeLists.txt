@@ -47,6 +47,7 @@ src/Dataset.cpp
 src/Camera.cpp
 src/Frame.cpp
 src/VisualOdometry.cpp
+src/Frontend.cpp
 )
 
 

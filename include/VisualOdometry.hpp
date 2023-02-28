@@ -3,6 +3,8 @@
 
 #include <gtest/gtest.h>
 
+#include <utility>
+
 #include "Common.hpp"
 #include "Config.hpp"
 #include "Dataset.hpp"
@@ -12,8 +14,8 @@ class VisualOdometry {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
   typedef std::shared_ptr<VisualOdometry> Ptr;
-  VisualOdometry(const std::string &config_file_path)
-      : config_file_path_(config_file_path){};
+  explicit VisualOdometry(std::string config_file_path)
+      : config_file_path_(std::move(config_file_path)){};
   VisualOdometry() = default;
   ~VisualOdometry() = default;
 
