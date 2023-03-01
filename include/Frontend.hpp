@@ -24,7 +24,7 @@ class Frontend {
   bool StereoInit();
   int DetectFeatures();
   int FindFeatureInRightImg();
-  bool BuildMap();
+  bool BuildInitMap();
   void SetCameras(const Camera::Ptr &left_camera, const Camera::Ptr &right_camera);
 
  private:

@@ -127,5 +127,8 @@ void Frontend::SetCameras(const Camera::Ptr& left_camera,
   this->camera_left_ = left_camera;
   this->camera_right_ = right_camera;
 }
-bool Frontend::BuildMap() { return false; }
+bool Frontend::BuildInitMap() { 
+
+  return false; 
+}
 }  // namespace slam_vo
