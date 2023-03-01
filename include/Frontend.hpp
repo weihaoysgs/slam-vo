@@ -20,10 +20,11 @@ class Frontend {
   Frontend();
   ~Frontend() = default;
 
-  bool AddNewFrame(const Frame::Ptr& frmae);
+  bool AddNewFrame(const Frame::Ptr& frame);
   bool StereoInit();
   int DetectFeatures();
   int FindFeatureInRightImg();
+  bool BuildMap();
   void SetCameras(const Camera::Ptr &left_camera, const Camera::Ptr &right_camera);
 
  private:

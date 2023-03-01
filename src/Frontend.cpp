@@ -38,6 +38,11 @@ bool Frontend::AddNewFrame(const Frame::Ptr& frame) {
 
 bool Frontend::StereoInit() {
   int num_feature_detected = DetectFeatures();
+  int num_tracked_features = FindFeatureInRightImg();
+  if (num_tracked_features < num_features_init_){
+    return false;
+  }
+
 
   std::vector<cv::KeyPoint> left_img_kps;
   cv::Mat drawed_kps_img;
@@ -82,11 +87,36 @@ int Frontend::FindFeatureInRightImg() {
     auto mp = feature->map_point_.lock();
     if (mp) {
       // use projected points as initial guess
-      // cv::Point2f pt_2d = camera_left_->world2pixel(feature->map_point_, current_frame_->pose_);
-    }
-    else{
+      Vec2 pt_2d = camera_left_->world2pixel(mp->GetPointPose(),
+                                             current_frame_->GetFramePose());
+    } else {
       pts_right.push_back(feature->position_.pt);
     }
+
+    //! calculate optical flow
+    std::vector<uchar> status;
+    Mat error;
+    cv::calcOpticalFlowPyrLK(
+        current_frame_->left_image_, current_frame_->right_image_, pts_left,
+        pts_right, status, error, cv::Size(11, 11), 3,
+        cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30,
+                         0.01),
+        cv::OPTFLOW_USE_INITIAL_FLOW);
+
+    int num_goods_pts = 0;
+    for (size_t i = 0; i < status.size(); i++) {
+      if (status[i]) {
+        cv::KeyPoint kpt(pts_right[i], 7);
+        Feature::Ptr feat = std::make_shared<Feature>(current_frame_, kpt);
+        feat->is_left_img_point = false;
+        current_frame_->right_features_.push_back(feat);
+        num_goods_pts++;
+      }
+      else{
+        current_frame_->right_features_.push_back(nullptr);
+      }
+    }
+    return num_goods_pts;
   }
 
   return 0;
@@ -97,4 +127,5 @@ void Frontend::SetCameras(const Camera::Ptr& left_camera,
   this->camera_left_ = left_camera;
   this->camera_right_ = right_camera;
 }
+bool Frontend::BuildMap() { return false; }
 }  // namespace slam_vo
