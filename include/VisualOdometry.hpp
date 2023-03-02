@@ -9,6 +9,10 @@
 #include "Config.hpp"
 #include "Dataset.hpp"
 #include "Frontend.hpp"
+#include "MapPoint.hpp"
+#include "Map.hpp"
+#include "View.hpp"
+#include "Triangulation.hpp"
 
 namespace slam_vo {
 class VisualOdometry {

@@ -50,6 +50,9 @@ src/VisualOdometry.cpp
 src/Frontend.cpp
 src/Feature.cpp
 src/MapPoint.cpp
+src/Map.cpp
+src/View.cpp
+src/Triangulation.cpp
 )
 
 

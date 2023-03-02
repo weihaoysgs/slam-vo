@@ -20,6 +20,7 @@ class MapPoint {
   typedef std::shared_ptr<MapPoint> Ptr;
 
   int observed_times_{0};
+  unsigned long id_ = 0;
   bool is_outlier{false};
 
   std::list<std::weak_ptr<Feature>>
@@ -44,6 +45,13 @@ class MapPoint {
   std::list<std::weak_ptr<Feature>> GetObservations() {
     std::unique_lock<std::mutex> lck(data_mutex_);
     return observations_;
+  }
+
+  static MapPoint::Ptr CreateNewMappoint(){
+    static unsigned long factory_id = 0;
+    MapPoint::Ptr new_mappoint(new MapPoint);
+    new_mappoint->id_ = factory_id++;
+    return new_mappoint;
   }
 
   MapPoint() = default;

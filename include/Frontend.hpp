@@ -7,6 +7,7 @@
 #include "Common.hpp"
 #include "Config.hpp"
 #include "Frame.hpp"
+#include "Triangulation.hpp"
 
 namespace slam_vo {
 class Frontend {

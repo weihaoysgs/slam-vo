@@ -39,10 +39,9 @@ bool Frontend::AddNewFrame(const Frame::Ptr& frame) {
 bool Frontend::StereoInit() {
   int num_feature_detected = DetectFeatures();
   int num_tracked_features = FindFeatureInRightImg();
-  if (num_tracked_features < num_features_init_){
+  if (num_tracked_features < num_features_init_) {
     return false;
   }
-
 
   std::vector<cv::KeyPoint> left_img_kps;
   cv::Mat drawed_kps_img;
@@ -111,8 +110,7 @@ int Frontend::FindFeatureInRightImg() {
         feat->is_left_img_point = false;
         current_frame_->right_features_.push_back(feat);
         num_goods_pts++;
-      }
-      else{
+      } else {
         current_frame_->right_features_.push_back(nullptr);
       }
     }
@@ -127,8 +125,33 @@ void Frontend::SetCameras(const Camera::Ptr& left_camera,
   this->camera_left_ = left_camera;
   this->camera_right_ = right_camera;
 }
-bool Frontend::BuildInitMap() { 
-
-  return false; 
+bool Frontend::BuildInitMap() {
+  std::vector<Sophus::SE3d> cameras_pose{camera_left_->GetCameraPose(),
+                                         camera_right_->GetCameraPose()};
+  size_t cnt_init_landmarks = 0;
+  //! traverse left image feature list
+  for (size_t i{0}; i < current_frame_->left_features_.size(); i++) {
+    //! the point in left image no match point in right image
+    if (current_frame_->right_features_[i] == nullptr) continue;
+    //! create mappoint from triangulation
+    std::vector<Vec3> points{
+        // clang-format off
+        camera_left_->pixel2camera(Vec2(current_frame_->left_features_[i]->position_.pt.x, current_frame_->left_features_[i]->position_.pt.y)),
+        camera_right_->pixel2camera(Vec2(current_frame_->right_features_[i]->position_.pt.x, current_frame_->right_features_[i]->position_.pt.y))
+        // clang-format on
+    };
+    Vec3 p_world = Vec3::Zero();
+    //! triangulation the point
+    if (TriangulationForStereo(cameras_pose, points, p_world) && p_world[2] > 0){
+      auto new_mappoint = MapPoint::CreateNewMappoint();
+      new_mappoint->SetPointPose(p_world);
+      new_mappoint->AddObservation(current_frame_->left_features_[i]);
+      new_mappoint->AddObservation(current_frame_->right_features_[i]);
+      current_frame_->left_features_[i]->map_point_ = new_mappoint;
+      current_frame_->right_features_[i]->map_point_ = new_mappoint;
+      cnt_init_landmarks++;
+    }
+  }
+  return false;
 }
 }  // namespace slam_vo

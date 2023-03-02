@@ -30,6 +30,10 @@ class Camera {
   Vec3 pixel2world(const Vec2 &p_p, const Sophus::SE3d &T_c_w, double depth = 1);
   Vec2 world2pixel(const Vec3 &p_w, const Sophus::SE3d &T_c_w);
 
+  Sophus::SE3d GetCameraPose() const {
+   return pose_;
+  }
+
  private:
   Mat33 K_;
   const double fx_;
