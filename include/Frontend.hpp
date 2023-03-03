@@ -8,6 +8,8 @@
 #include "Config.hpp"
 #include "Frame.hpp"
 #include "Triangulation.hpp"
+#include "Map.hpp"
+#include "View.hpp"
 
 namespace slam_vo {
 class Frontend {
@@ -27,6 +29,8 @@ class Frontend {
   int FindFeatureInRightImg();
   bool BuildInitMap();
   void SetCameras(const Camera::Ptr &left_camera, const Camera::Ptr &right_camera);
+  void SetMap(const Map::Ptr &map) { map_ptr_ = map; };
+  void SetViewer(const std::shared_ptr<View> &viewer) { viewer_ptr_ = viewer; }
 
  private:
   // data
@@ -36,6 +40,8 @@ class Frontend {
   Frame::Ptr last_frame_ = nullptr;
   Camera::Ptr camera_left_ = nullptr;
   Camera::Ptr camera_right_ = nullptr;
+  Map::Ptr  map_ptr_ = nullptr;
+  View::Ptr viewer_ptr_ = nullptr;
 
   // params
   int num_features_ = 200;

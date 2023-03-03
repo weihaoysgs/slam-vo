@@ -18,14 +18,17 @@ bool Frontend::AddNewFrame(const Frame::Ptr& frame) {
     }
     case FrontendStatus::TRACKING_GOOD: {
       // code
+      std::cout << "Init success" << std::endl;
       break;
     }
     case FrontendStatus::TRACKING_BAD: {
       // code
+      std::cout << "Tracking" << std::endl;
       break;
     }
     case FrontendStatus::LOST: {
       // code
+      std::cout << "Lost" << std::endl;
       break;
     }
 
@@ -43,18 +46,31 @@ bool Frontend::StereoInit() {
     return false;
   }
 
-  std::vector<cv::KeyPoint> left_img_kps;
-  cv::Mat drawed_kps_img;
-  for (const auto& feature : current_frame_->left_features_) {
-    left_img_kps.push_back(feature->position_);
+  //! show image
+  {
+    std::vector<cv::KeyPoint> left_img_kps;
+    cv::Mat drawed_kps_img;
+    for (const auto& feature : current_frame_->left_features_) {
+      left_img_kps.push_back(feature->position_);
+    }
+    cv::drawKeypoints(current_frame_->left_image_, left_img_kps, drawed_kps_img,
+                      cv::Scalar(255, 255, 0));
+    cv::imshow("leftImage", current_frame_->left_image_);
+    cv::imshow("rightImage", current_frame_->right_image_);
+    cv::imshow("drawed_kps_img", drawed_kps_img);
+    cv::waitKey(10);
   }
-  cv::drawKeypoints(current_frame_->left_image_, left_img_kps, drawed_kps_img,
-                    cv::Scalar(255, 255, 0));
-  cv::imshow("leftImage", current_frame_->left_image_);
-  cv::imshow("rightImage", current_frame_->right_image_);
-  cv::imshow("drawed_kps_img", drawed_kps_img);
-  cv::waitKey(10);
-  return true;
+
+  bool build_map_success = BuildInitMap();
+  if (build_map_success) {
+    front_status_ = FrontendStatus::TRACKING_GOOD;
+    if (viewer_ptr_) {
+      viewer_ptr_->AddCurrentFrame(current_frame_);
+      viewer_ptr_->UpdateMap();
+    }
+
+    return true;
+  }
 }
 
 int Frontend::DetectFeatures() {
@@ -79,6 +95,7 @@ int Frontend::DetectFeatures() {
   }
   return cnt_feature_detected;
 }
+
 int Frontend::FindFeatureInRightImg() {
   std::vector<cv::Point2f> pts_left, pts_right;
   for (auto& feature : current_frame_->left_features_) {
@@ -91,33 +108,30 @@ int Frontend::FindFeatureInRightImg() {
     } else {
       pts_right.push_back(feature->position_.pt);
     }
-
-    //! calculate optical flow
-    std::vector<uchar> status;
-    Mat error;
-    cv::calcOpticalFlowPyrLK(
-        current_frame_->left_image_, current_frame_->right_image_, pts_left,
-        pts_right, status, error, cv::Size(11, 11), 3,
-        cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30,
-                         0.01),
-        cv::OPTFLOW_USE_INITIAL_FLOW);
-
-    int num_goods_pts = 0;
-    for (size_t i = 0; i < status.size(); i++) {
-      if (status[i]) {
-        cv::KeyPoint kpt(pts_right[i], 7);
-        Feature::Ptr feat = std::make_shared<Feature>(current_frame_, kpt);
-        feat->is_left_img_point = false;
-        current_frame_->right_features_.push_back(feat);
-        num_goods_pts++;
-      } else {
-        current_frame_->right_features_.push_back(nullptr);
-      }
-    }
-    return num_goods_pts;
   }
+  //! calculate optical flow
+  std::vector<uchar> status;
+  Mat error;
+  cv::calcOpticalFlowPyrLK(
+      current_frame_->left_image_, current_frame_->right_image_, pts_left,
+      pts_right, status, error, cv::Size(11, 11), 3,
+      cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30,
+                       0.01),
+      cv::OPTFLOW_USE_INITIAL_FLOW);
 
-  return 0;
+  int num_goods_pts = 0;
+  for (size_t i = 0; i < status.size(); i++) {
+    if (status[i]) {
+      cv::KeyPoint kpt(pts_right[i], 7);
+      Feature::Ptr feat = std::make_shared<Feature>(current_frame_, kpt);
+      feat->is_left_img_point = false;
+      current_frame_->right_features_.push_back(feat);
+      num_goods_pts++;
+    } else {
+      current_frame_->right_features_.push_back(nullptr);
+    }
+  }
+  return num_goods_pts;
 }
 
 void Frontend::SetCameras(const Camera::Ptr& left_camera,
@@ -142,7 +156,8 @@ bool Frontend::BuildInitMap() {
     };
     Vec3 p_world = Vec3::Zero();
     //! triangulation the point
-    if (TriangulationForStereo(cameras_pose, points, p_world) && p_world[2] > 0){
+    if (TriangulationForStereo(cameras_pose, points, p_world) &&
+        p_world[2] > 0) {
       auto new_mappoint = MapPoint::CreateNewMappoint();
       new_mappoint->SetPointPose(p_world);
       new_mappoint->AddObservation(current_frame_->left_features_[i]);
@@ -151,7 +166,14 @@ bool Frontend::BuildInitMap() {
       current_frame_->right_features_[i]->map_point_ = new_mappoint;
       cnt_init_landmarks++;
     }
+    current_frame_->SetKeyFrame();
+    map_ptr_->InsertKeyFrame(current_frame_);
+    //    backend_->UpdateMap();
   }
-  return false;
+  if (cnt_init_landmarks > num_features_init_) {
+    return true;
+  } else {
+    return false;
+  }
 }
 }  // namespace slam_vo

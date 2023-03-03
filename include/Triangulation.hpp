@@ -16,7 +16,7 @@ namespace slam_vo {
  * @param pt_world
  * @return
  */
-bool TriangulationForStereo(const std::vector<Sophus::SE3d> &poses,
+inline bool TriangulationForStereo(const std::vector<Sophus::SE3d> &poses,
                             const std::vector<Vec3> &points, Vec3 &pt_world) {
   MatXX A(2 * poses.size(), 4);
   VecX b(2 * poses.size());

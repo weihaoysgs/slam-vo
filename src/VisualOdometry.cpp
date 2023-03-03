@@ -9,8 +9,16 @@ bool VisualOdometry::VOInit() {
 
   CHECK_EQ(dataset_ptr_->DatasetInit(), true);
   frontend_ptr_ = std::make_shared<Frontend>();
+  map_ptr_ = std::make_shared<Map>();
+  viewer_ptr_ = std::make_shared<View>();
+  LOG(INFO) << "VO exit";
+
   frontend_ptr_->SetCameras(dataset_ptr_->GetCamera(0),
                             dataset_ptr_->GetCamera(1));
+  frontend_ptr_->SetMap(map_ptr_);
+  frontend_ptr_->SetViewer(viewer_ptr_);
+  viewer_ptr_->SetMap(map_ptr_);
+
   return true;
 }
 void VisualOdometry::Run() {
@@ -18,8 +26,12 @@ void VisualOdometry::Run() {
     if (!Step()) {
       LOG(INFO) << "Step Error";
       break;
+    } else {
+      LOG(INFO) << "OK";
     }
   }
+
+  LOG(INFO) << "VO exit";
 }
 bool VisualOdometry::Step() {
   Frame::Ptr new_frame = dataset_ptr_->NextFrame();

@@ -32,6 +32,8 @@ class VisualOdometry {
   const std::string config_file_path_;
   Dataset::Ptr dataset_ptr_;
   Frontend::Ptr frontend_ptr_;
+  View::Ptr viewer_ptr_;
+  Map::Ptr map_ptr_;
 };
 
 }  // namespace slam_vo

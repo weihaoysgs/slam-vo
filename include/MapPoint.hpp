@@ -47,6 +47,8 @@ class MapPoint {
     return observations_;
   }
 
+  void RemoveObservation(std::shared_ptr<Feature>& feat);
+
   static MapPoint::Ptr CreateNewMappoint(){
     static unsigned long factory_id = 0;
     MapPoint::Ptr new_mappoint(new MapPoint);

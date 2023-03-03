@@ -19,7 +19,13 @@ Vec2 Camera::camera2pixel(const Vec3& p_c) const {
   // clang-format on
 }
 
-Vec3 Camera::pixel2camera(const Vec2& p_p, double depth) {}
+Vec3 Camera::pixel2camera(const Vec2& p_p, double depth) const {
+  return {
+    (p_p(0, 0) - cx_) * depth / fx_,
+    (p_p(1, 0) - cy_) * depth / fy_,
+    depth
+  };
+}
 Vec3 Camera::pixel2world(const Vec2& p_p, const Sophus::SE3d& T_c_w,
                          double depth) {}
 
