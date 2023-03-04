@@ -13,6 +13,7 @@
 #include "Map.hpp"
 #include "View.hpp"
 #include "Triangulation.hpp"
+#include "Backend.hpp"
 
 namespace slam_vo {
 class VisualOdometry {

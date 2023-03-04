@@ -43,7 +43,7 @@ class Frame {
     std::unique_lock<std::mutex> lck(pose_mutex_);
     return pose_;
   }
-  void SetFramePose(Sophus::SE3d &pose) {
+  void SetFramePose(const Sophus::SE3d& pose) {
     std::unique_lock<std::mutex> lck(pose_mutex_);
     pose_ = pose;
   }

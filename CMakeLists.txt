@@ -53,6 +53,7 @@ src/MapPoint.cpp
 src/Map.cpp
 src/View.cpp
 src/Triangulation.cpp
+src/Backend.cpp
 )
 
 

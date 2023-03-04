@@ -16,14 +16,9 @@ bool Frontend::AddNewFrame(const Frame::Ptr& frame) {
       StereoInit();
       break;
     }
-    case FrontendStatus::TRACKING_GOOD: {
-      // code
-      std::cout << "Init success" << std::endl;
-      break;
-    }
+    case FrontendStatus::TRACKING_GOOD:
     case FrontendStatus::TRACKING_BAD: {
-      // code
-      std::cout << "Tracking" << std::endl;
+      Track();
       break;
     }
     case FrontendStatus::LOST: {
@@ -35,6 +30,7 @@ bool Frontend::AddNewFrame(const Frame::Ptr& frame) {
     default:
       break;
   }
+
   last_frame_ = current_frame_;
   return true;
 }
@@ -68,7 +64,7 @@ bool Frontend::StereoInit() {
       viewer_ptr_->AddCurrentFrame(current_frame_);
       viewer_ptr_->UpdateMap();
     }
-
+    LOG(INFO) << "Stereo init success.";
     return true;
   }
 }
@@ -139,6 +135,7 @@ void Frontend::SetCameras(const Camera::Ptr& left_camera,
   this->camera_left_ = left_camera;
   this->camera_right_ = right_camera;
 }
+
 bool Frontend::BuildInitMap() {
   std::vector<Sophus::SE3d> cameras_pose{camera_left_->GetCameraPose(),
                                          camera_right_->GetCameraPose()};
@@ -150,8 +147,10 @@ bool Frontend::BuildInitMap() {
     //! create mappoint from triangulation
     std::vector<Vec3> points{
         // clang-format off
-        camera_left_->pixel2camera(Vec2(current_frame_->left_features_[i]->position_.pt.x, current_frame_->left_features_[i]->position_.pt.y)),
-        camera_right_->pixel2camera(Vec2(current_frame_->right_features_[i]->position_.pt.x, current_frame_->right_features_[i]->position_.pt.y))
+        camera_left_->pixel2camera(Vec2(current_frame_->left_features_[i]->position_.pt.x,
+                                            current_frame_->left_features_[i]->position_.pt.y)),
+        camera_right_->pixel2camera(Vec2(current_frame_->right_features_[i]->position_.pt.x,
+                                             current_frame_->right_features_[i]->position_.pt.y))
         // clang-format on
     };
     Vec3 p_world = Vec3::Zero();
@@ -175,5 +174,85 @@ bool Frontend::BuildInitMap() {
   } else {
     return false;
   }
+}
+
+void Frontend::Track() {
+  if (last_frame_) {
+    current_frame_->SetFramePose(relative_motion_ *
+                                 last_frame_->GetFramePose());
+  }
+
+  int num_tracked_feature = TrackLastFrame();
+  tracking_inliers_ = EstimateCurrentPose();
+}
+
+int Frontend::TrackLastFrame() {
+  std::vector<cv::Point2f> kps_last, kps_current;
+  for (auto& feat : last_frame_->left_features_) {
+    if (feat->map_point_.lock()) {  //! this point have been triangulation
+      std::shared_ptr<MapPoint> mp =
+          feat->map_point_.lock();  //! get the 3D position in world
+      Vec2 px = camera_left_->world2pixel(mp->GetPointPose(),
+                                          current_frame_->GetFramePose());
+      kps_last.push_back(feat->position_.pt);
+      //! if the last frame feature point have been triangulation
+      //! and the current frame pose have benn update
+      //! remember that 'the point position in the world is same in every camera
+      //! pose' so we can project the world point to 2d image flat
+      kps_current.push_back(cv::Point2d(px[0], px[1]));
+    } else {
+      kps_last.push_back(feat->position_.pt);
+      kps_current.push_back(feat->position_.pt);
+    }
+  }
+
+  std::vector<uchar> status;
+  cv::Mat error;
+  // clang-format off
+  cv::calcOpticalFlowPyrLK(
+      current_frame_->left_image_, current_frame_->left_image_, kps_last,
+      kps_current, status, error, cv::Size(11, 11), 3,
+      cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30,0.01),
+      cv::OPTFLOW_USE_INITIAL_FLOW);
+  // clang-format on
+  int num_good_pts = 0;
+  for (size_t i{0}; i < status.size(); i++) {
+    if (status[i]) {  //! match success
+      cv::KeyPoint kp(kps_current[i], 7);
+      Feature::Ptr new_feature(new Feature(current_frame_, kp));
+      //! if this point have been triangulation, using the last frame
+      //! 'map_point_' is ok.
+      new_feature->map_point_ = last_frame_->left_features_[i]->map_point_;
+      current_frame_->left_features_.push_back(new_feature);
+      num_good_pts++;
+    }
+  }
+
+  return num_good_pts;
+}
+
+int Frontend::EstimateCurrentPose() {
+  //! setup g2o
+  // clang-format off
+  typedef g2o::BlockSolver_6_3 BlockSolverType;
+  typedef g2o::LinearSolverDense<BlockSolverType::PoseMatrixType> LinearSolverType;
+  auto solver = new g2o::OptimizationAlgorithmLevenberg(g2o::make_unique<BlockSolverType>(
+                                              g2o::make_unique<LinearSolverType>()));
+  // clang-format on
+  g2o::SparseOptimizer optimizer;
+  optimizer.setAlgorithm(solver);
+
+  //! vertex
+  auto* vertex_pose = new VertexPose();  //! camera vertex pose
+  vertex_pose->setId(0);
+  vertex_pose->setEstimate(current_frame_->GetFramePose());
+  optimizer.addVertex(vertex_pose);
+
+  //! K
+  Mat33 K = camera_left_->GetCameraK();
+
+  //! edge
+  std::vector<EdgeProjectionPoseOnly*> edges;
+  std::vector<Feature::Ptr> features;
 }
 }  // namespace slam_vo
